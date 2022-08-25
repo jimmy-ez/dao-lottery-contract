@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Lottery {
     address public operatorAddress;
-    uint public _lotteryId;
+    uint public lotteryId;
     uint public ticketPrice = 5 * 10 ** 18;
     address public tokenAddress;
 
@@ -25,13 +25,13 @@ contract Lottery {
         uint number;
     }
 
-    mapping(uint256 => Ticket) public _tickets;
-    mapping(uint256 => uint[]) public _ticketsEachRound;
-    mapping(uint256 => uint) public _balanceEachRound;
+    mapping(uint256 => Ticket) public tickets;
+    mapping(uint256 => uint[]) public ticketsEachRound;
+    mapping(uint256 => uint) public balanceEachRound;
     mapping(address => mapping(uint => uint[])) public totalMyTicket;
     mapping(uint => uint) public winningTicket;
-    mapping(uint => bool) public _isClaimed;
-    mapping(uint => bool) public _isPickedWinner;
+    mapping(uint => bool) public isClaimed;
+    mapping(uint => bool) public isPickedWinner;
 
     modifier onlyOperator() {
         require(msg.sender == operatorAddress, "Not operator");
@@ -41,39 +41,39 @@ contract Lottery {
     function buyTicket(uint[] calldata number) external {
         require(lottoToken.balanceOf(msg.sender) >= ticketPrice * number.length, "Not enough balance");
         lottoToken.transferFrom(msg.sender, address(this), ticketPrice * number.length);
-        _balanceEachRound[_lotteryId] += ticketPrice * number.length;
+        balanceEachRound[lotteryId] += ticketPrice * number.length;
         for(uint i = 0; i < number.length; i++){
-            _tickets[ticketCount] = Ticket(msg.sender, number[i]);
-            _ticketsEachRound[_lotteryId].push(ticketCount);
-            totalMyTicket[msg.sender][_lotteryId].push(ticketCount);
+            tickets[ticketCount] = Ticket(msg.sender, number[i]);
+            ticketsEachRound[lotteryId].push(ticketCount);
+            totalMyTicket[msg.sender][lotteryId].push(ticketCount);
             ticketCount++;
         }
     }
 
     function pickWinner() onlyOperator external {
-        require(_ticketsEachRound[_lotteryId].length > 0, "No players");
-        uint randomNumber = uint(keccak256(abi.encodePacked(block.difficulty, _ticketsEachRound[_lotteryId])));
-        randomNumber = randomNumber % _ticketsEachRound[_lotteryId].length;
-        winningTicket[_lotteryId] = _ticketsEachRound[_lotteryId][randomNumber];
-        _isPickedWinner[_lotteryId] = true;
-        _lotteryId++;
+        require(ticketsEachRound[lotteryId].length > 0, "No players");
+        uint randomNumber = uint(keccak256(abi.encodePacked(block.difficulty, ticketsEachRound[lotteryId])));
+        randomNumber = randomNumber % ticketsEachRound[lotteryId].length;
+        winningTicket[lotteryId] = ticketsEachRound[lotteryId][randomNumber];
+        isPickedWinner[lotteryId] = true;
+        lotteryId++;
     }
 
-    function claimReward(uint256 _lotteryId) external {
-        require(_isPickedWinner[_lotteryId] == true, "Winner isn't piecked");
-        uint[] memory myTickets = totalMyTicket[msg.sender][_lotteryId];
+    function claimReward(uint256 lotteryId) external {
+        require(isPickedWinner[lotteryId] == true, "Winner isn't piecked");
+        uint[] memory myTickets = totalMyTicket[msg.sender][lotteryId];
         bool doIWin = false;
         for(uint i=0; i < myTickets.length; i++){
-            if(myTickets[i] == winningTicket[_lotteryId]){
+            if(myTickets[i] == winningTicket[lotteryId]){
                 doIWin = true;
             }
         }
         require(doIWin == true, "You not win");
-        require(_isClaimed[_lotteryId] == false, "Reward is claimed");
+        require(isClaimed[lotteryId] == false, "Reward is claimed");
 
-        lottoToken.transfer(msg.sender, _balanceEachRound[_lotteryId]);
+        lottoToken.transfer(msg.sender, balanceEachRound[lotteryId]);
 
-        _isClaimed[_lotteryId] = true;
+        isClaimed[lotteryId] = true;
     }
 
 }
