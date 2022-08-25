@@ -2,12 +2,11 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Lotto is ERC20, Ownable {
-    constructor() ERC20("Lotto", "LTT") {}
+contract Lotto is ERC20 {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
 
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
+    function mint(address account, uint256 amount) external {
+        _mint(account, amount);
     }
 }
