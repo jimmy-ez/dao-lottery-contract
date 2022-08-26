@@ -26,8 +26,12 @@ const config: HardhatUserConfig = {
     },
     bkc_testnet: {
       url: `https://rpc-testnet.bitkubchain.io`,
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY, "defd51b8913cedcda739eeabbd578894ae9458eac931575720923857c354634f"] : [],
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    rinkeby_testnet: {
+      url: `https://eth-rinkeby.alchemyapi.io/v2/Qt8Wyhov29nWxq4df9Gc0EY75sD8CeGA`,
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

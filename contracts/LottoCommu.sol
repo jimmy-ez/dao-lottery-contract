@@ -43,7 +43,7 @@ contract LottoCommu {
     mapping(address => uint256) public tokenFeeReservers;
 
     modifier isLotteryNotEnd() {
-        require(lottery.isPickedWinner(lotteryIdEachRound[roundId]) == false, "Lottery is end");
+        require(lottery.isPickedWinner(lottery.lotteryId()) == false, "Lottery is end");
         _;
     }
 
@@ -58,7 +58,9 @@ contract LottoCommu {
         isStartRound[roundId] = true;
     }
 
-    function closeRound() external onlyOperator {}
+    function closeRound() external onlyOperator {
+        roundId++;
+    }
 
     function buyTicketDAO(uint256 ticketCount) external isLotteryNotEnd {
         require(ticketCount > 0, "ticket count is 0");
@@ -91,9 +93,9 @@ contract LottoCommu {
     }
 
     function claim(uint256 roundId_) external {
+        require(isClaimed[roundId_][msg.sender] == false, "You are claimed");
         require(isWinEachRound[roundId_] == true, "This round not win");
         require(memberTicketsAmount[roundId_][msg.sender] > 0, "Did not buy");
-        require(isClaimed[roundId_][msg.sender] == false, "You are claimed");
         uint256 myReward = reward(roundId_);
         lottoToken.transfer(msg.sender, myReward);
         isClaimed[roundId_][msg.sender] = true;
